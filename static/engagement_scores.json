@@ -166,5 +166,25 @@
     {
         "session": "Session 42",
         "score": 93.49333333333334
+    },
+    {
+        "session": "Session 43",
+        "score": NaN
+    },
+    {
+        "session": "Session 44",
+        "score": NaN
+    },
+    {
+        "session": "Session 45",
+        "score": NaN
+    },
+    {
+        "session": "Session 46",
+        "score": 75.46833333333335
+    },
+    {
+        "session": "Session 47",
+        "score": 81.85490740740741
     }
 ]

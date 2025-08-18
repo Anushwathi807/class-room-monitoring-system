@@ -35,7 +35,7 @@ labels = ["angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"]
 
 # pylint: disable=line-too-long, disable=too-few-public-methods
 
-weight_file = "C:/Users/deepa/OneDrive/Desktop/Aishu/Main Projects/CMS/project/models/FER-CNN.h5"
+weight_file = "C:/Users/mourish/Desktop/Projects/CMS_NEC/models/FER-CNN.h5"
 
 
 def load_model_weights(model: Sequential, weight_file: str) -> Sequential:

@@ -1,19 +1,19 @@
 {
-    "id": "0c94a91e-569d-4d57-92c8-6198a649a3df",
+    "id": "0583e66a-0e4e-4c60-9b7c-17b57809f94f",
     "choices": [
         {
             "index": 0,
             "message": {
                 "role": "assistant",
-                "content": "The picture shows a young girl sitting in front of a computer. The infrastructure of the place is that of a typical Indian home with a red wall and a white wall in the background. The people are working on the computer.",
+                "content": "The picture is taken in an office. The infrastructure of the place is a typical office infrastructure. The people in the picture are working on their laptops. The man in the picture is adjusting the hair of the man in front of him.",
                 "name": null
             },
             "finish_reason": "stop"
         }
     ],
     "usage": {
-        "completion_tokens": 46,
+        "completion_tokens": 48,
         "prompt_tokens": 783,
-        "total_tokens": 829
+        "total_tokens": 831
     }
 }

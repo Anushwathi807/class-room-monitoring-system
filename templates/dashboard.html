@@ -1,55 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Dashboard{% endblock %}</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/styles.css') }}"
-    />
-  </head>
-  <body>
-    <!-- Top bar with username, dashboard title, and logout -->
-    <div class="topbar">
-      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <style>
+        :root {
+            --primary-color: #2196f3;
+            --secondary-color: #1976d2;
+            --sidebar-bg: #ffffff;
+            --topbar-bg: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --hover-color: #e3f2fd;
+            --border-color: #e0e0e0;
+            --transition: all 0.3s ease;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
 
-      <span class="dashboard-title">KalviKoodam.ai</span>
-      <div class="user-info">
-        <span>Teacher</span> |
-        <a href="{{ url_for('logout') }}">Logout</a>
-      </div>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            overflow-x: hidden;
+        }
+
+        /* Topbar Styles */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--topbar-bg);
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        .dashboard-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-left: 1rem;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .toggle-btn:hover {
+            background: var(--hover-color);
+        }
+
+        .user-info {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: var(--transition);
+        }
+
+        .user-info a:hover {
+            background: var(--hover-color);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            height: calc(100vh - 70px);
+            width: 250px;
+            background: var(--sidebar-bg);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            overflow-y: auto;
+            z-index: 900;
+        }
+
+        .sidebar nav {
+            padding: 1rem 0;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            margin: 0.2rem 0.8rem;
+            border-radius: 10px;
+        }
+
+        .sidebar a:hover {
+            background: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .sidebar a.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .sidebar a i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Content Area */
+        .content {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 2rem;
+            min-height: calc(100vh - 70px);
+            transition: var(--transition);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+            }
+
+            .topbar {
+                padding: 0 1rem;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-secondary);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <button class="toggle-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="dashboard-title">KalviKoodam.ai</span>
+        <div class="user-info">
+            <i class="fas fa-user-tie"></i>
+            <span>Teacher</span>
+            <a href="{{ url_for('logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
     </div>
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-      <nav>
-        <a href="{{ url_for('main') }}">Home</a>
-        <a href="{{ url_for('schedule_session') }}">Schedule Session</a>
-        <a href="{{ url_for('session_report') }}">Session Reports</a>
-        <a href="{{ url_for('add_trainer') }}">Add Trainer</a>
-        <a href="{{ url_for('manage_students') }}">Manage Students</a>
-        <a href="{{ url_for('attendance') }}">Attendance</a>
-        <a href="{{ url_for('session_report') }}">Exam Management</a>
-        <a href="{{ url_for('session_report') }}">Discussions</a>
-        <a href="{{ url_for('session_report') }}">Resource Sharing</a>
-        <a href="{{ url_for('session_report') }}">Substitution Management</a>
-      </nav>
+        <nav>
+            <a href="{{ url_for('main') }}" class="{{ 'active' if request.endpoint == 'main' }}">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ url_for('schedule_session') }}" class="{{ 'active' if request.endpoint == 'schedule_session' }}">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Schedule Session</span>
+            </a>
+            <a href="{{ url_for('session_report') }}" class="{{ 'active' if request.endpoint == 'session_report' }}">
+                <i class="fas fa-chart-bar"></i>
+                <span>Session Reports</span>
+            </a>
+            <a href="{{ url_for('add_trainer') }}" class="{{ 'active' if request.endpoint == 'add_trainer' }}">
+                <i class="fas fa-user-plus"></i>
+                <span>Add Trainer</span>
+            </a>
+            <a href="{{ url_for('manage_students') }}" class="{{ 'active' if request.endpoint == 'manage_students' }}">
+                <i class="fas fa-users"></i>
+                <span>Manage Students</span>
+            </a>
+            <a href="{{ url_for('attendance') }}" class="{{ 'active' if request.endpoint == 'attendance' }}">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Attendance</span>
+            </a>
+        </nav>
     </div>
 
     <!-- Main content -->
-    <div class="content">{% block content %}{% endblock %}</div>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      // Function to toggle the sidebar visibility
-      function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar.style.width === "0px") {
-          sidebar.style.width = "200px";
-        } else {
-          sidebar.style.width = "0px";
+        // Function to toggle the sidebar visibility
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.querySelector(".content");
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+            } else {
+                if (sidebar.style.width === "0px") {
+                    sidebar.style.width = "250px";
+                    content.style.marginLeft = "250px";
+                } else {
+                    sidebar.style.width = "0px";
+                    content.style.marginLeft = "0px";
+                }
+            }
         }
-      }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.querySelector(".content");
+            
+            if (window.innerWidth > 768) {
+                sidebar.style.width = "250px";
+                content.style.marginLeft = "250px";
+                sidebar.style.transform = "none";
+            } else {
+                sidebar.style.width = "250px";
+                content.style.marginLeft = "0px";
+                sidebar.style.transform = "translateX(-100%)";
+            }
+        });
     </script>
-  </body>
-</html>
+</body>
+</html>   

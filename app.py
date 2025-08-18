@@ -192,8 +192,8 @@ def login():
 def main():
     # Hardcoded institution details
     institution_details = {
-        "name": "ABC Training Institute",
-        "location": "Coimbatore, India",
+        "name": "KGiSL",
+        "location": "Coimbatore",
         "contact": "+91 12345 67890",
     }
 

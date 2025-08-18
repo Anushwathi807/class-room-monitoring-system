@@ -3,73 +3,336 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="home">
-    <main class="home-container">
-        <!-- Institution Details div -->
-        <div class="institution-details">
-            <h2>Institution Details</h2>
-            <p><strong>Institution Name:</strong> {{ institution.name }}</p>
-            <p><strong>Location:</strong> {{ institution.location }}</p>
-            <p><strong>Number of Sessions Conducted:</strong> {{ total_sessions }}</p>
-        </div>
-
-        <!-- Institution Engagement Score div -->
-        <div class="institution-engagement">
-            <h2>Institution Engagement Score</h2>
-            <p><span class="institution-engagement-score">{{ engagement_score }} %</span></p>
-            
-            <!-- Engagement Score Legend -->
-            <div class="score-legend">
-                <ul>
-                    <li><span class="excellent"></span> Excellent</li>
-                    <li><span class="good"></span> Good</li>
-                    <li><span class="average"></span> Average</li>
-                    <li><span class="bad"></span> Bad</li>
-                    <li><span class="extremely-bad"></span> Extremely Bad</li>
-                </ul>
+<div class="dashboard-home">
+    <main class="dashboard-container">
+        <!-- Institution Overview Card -->
+        <div class="overview-card">
+            <div class="card-header">
+                <h2>{{ institution.name }}</h2>
+                <span class="location-badge">
+                    <i class="fas fa-map-marker-alt"></i> {{ institution.location }}
+                </span>
+            </div>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span class="stat-value">{{ total_sessions }}</span>
+                    <span class="stat-label">Sessions Conducted</span>
+                </div>
             </div>
         </div>
 
-        <!-- Trainers Table div -->
-        <div class="trainers-table">
-            <h2>Trainers</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Trainer ID</th>
-                        <th>Name</th>
-                        <th>Expertise</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for trainer in trainers %}
-                    <tr>
-                        <td>{{ trainer.id }}</td>
-                        <td>{{ trainer.name }}</td>
-                        <td>{{ trainer.expertise }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Engagement Score Card -->
+        <div class="score-card">
+            <h2>Engagement Score</h2>
+            <div class="score-circle">
+                <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke-width="2"
+                        class="circle-bg"/>
+                    <path d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke-width="2"
+                        class="circle"
+                        id="scoreCircle"/>
+                    <text x="18" y="20.35" class="score-text">{{ engagement_score }}%</text>
+                </svg>
+            </div>
+            <div class="score-legend">
+                <div class="legend-item excellent">
+                    <span class="dot"></span>
+                    <span>90-100% Excellent</span>
+                </div>
+                <div class="legend-item good">
+                    <span class="dot"></span>
+                    <span>70-89% Good</span>
+                </div>
+                <div class="legend-item average">
+                    <span class="dot"></span>
+                    <span>50-69% Average</span>
+                </div>
+                <div class="legend-item bad">
+                    <span class="dot"></span>
+                    <span>30-49% Bad</span>
+                </div>
+                <div class="legend-item extremely-bad">
+                    <span class="dot"></span>
+                    <span><30% Poor</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trainers Card -->
+        <div class="trainers-card">
+            <div class="card-header">
+                <h2>Trainers</h2>
+             
+            </div>
+            <div class="trainers-grid">
+                {% for trainer in trainers %}
+                <div class="trainer-card">
+                    <div class="trainer-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="trainer-info">
+                        <h3>{{ trainer.name }}</h3>
+                        <span class="trainer-id">#{{ trainer.id }}</span>
+                        <div class="expertise-tags">
+                            {% for skill in trainer.expertise.split(',') %}
+                            <span class="expertise-tag">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </main>
 </div>
 
-<!-- JavaScript to Dynamically Update Engagement Score Color -->
-<script>
-var institutionScore = parseFloat('{{ engagement_score }}');
-var scoreElement = document.querySelector('.institution-engagement-score');
-
-if (institutionScore >= 90) {
-    scoreElement.style.color = '#4caf50';  // Excellent (green)
-} else if (institutionScore >= 70) {
-    scoreElement.style.color = '#8bc34a';  // Good (light green)
-} else if (institutionScore >= 50) {
-    scoreElement.style.color = '#ffeb3b';  // Average (yellow)
-} else if (institutionScore >= 30) {
-    scoreElement.style.color = '#ff9800';  // Bad (orange)
-} else {
-    scoreElement.style.color = '#f44336';  // Extremely Bad (red)
+<!-- CSS Styles -->
+<style>
+:root {
+    --primary-color: #2196f3;
+    --secondary-color: #1976d2;
+    --background-color: #f5f7fa;
+    --card-background: #ffffff;
+    --text-primary: #2c3e50;
+    --text-secondary: #7f8c8d;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --border-radius: 12px;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
 }
+
+.dashboard-home {
+    padding: 2rem;
+    background: var(--background-color);
+    min-height: 100vh;
+}
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Cards Styling */
+.overview-card,
+.score-card,
+.trainers-card {
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+}
+
+.overview-card:hover,
+.score-card:hover,
+.trainers-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Overview Card */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.location-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(33, 150, 243, 0.1);
+    border-radius: var(--border-radius);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    display: block;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Score Card */
+.score-circle {
+    width: 200px;
+    margin: 2rem auto;
+}
+
+.circular-chart {
+    width: 100%;
+    height: auto;
+}
+
+.circle-bg {
+    stroke: #eee;
+}
+
+.circle {
+    stroke: var(--primary-color);
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.score-text {
+    font-size: 8px;
+    text-anchor: middle;
+    font-weight: bold;
+    fill: var(--text-primary);
+}
+
+.score-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.excellent .dot { background: #4caf50; }
+.good .dot { background: #8bc34a; }
+.average .dot { background: #ffeb3b; }
+.bad .dot { background: #ff9800; }
+.extremely-bad .dot { background: #f44336; }
+
+/* Trainers Card */
+.add-trainer-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.add-trainer-btn:hover {
+    background: var(--secondary-color);
+}
+
+.trainers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.trainer-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(33, 150, 243, 0.05);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.trainer-card:hover {
+    background: rgba(33, 150, 243, 0.1);
+}
+
+.trainer-avatar {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-right: 1rem;
+}
+
+.trainer-info h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.trainer-id {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.expertise-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.expertise-tag {
+    background: rgba(33, 150, 243, 0.1);
+    color: var(--primary-color);
+    padding: 0.2rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+</style>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Engagement Score Circle Animation
+    const score = parseFloat('{{ engagement_score }}');
+    const circle = document.querySelector('.circle');
+    const scoreText = document.querySelector('.score-text');
+    
+    // Calculate circle color
+    let color;
+    if (score >= 90) color = '#4caf50';
+    else if (score >= 70) color = '#8bc34a';
+    else if (score >= 50) color = '#ffeb3b';
+    else if (score >= 30) color = '#ff9800';
+    else color = '#f44336';
+
+    // Set circle color
+    circle.style.stroke = color;
+    scoreText.style.fill = color;
+
+    // Calculate and set circle progress
+    const radius = circle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (score / 100) * circumference;
+    
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = offset;
+});
 </script>
 {% endblock %}
