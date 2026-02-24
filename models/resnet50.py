@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D
-
 
 tf_version = int(tf.__version__.split(".", maxsplit=1)[0])
 
@@ -22,8 +20,9 @@ if tf_version == 1:
     )
 
 else:
-    from tensorflow.keras.models import Model
-    from tensorflow.keras.layers import (
+    # Use tf_keras (legacy Keras 2) for compatibility with TF 2.16+
+    from tf_keras.models import Model
+    from tf_keras.layers import (
         Input,
         BatchNormalization,
         ZeroPadding2D,

@@ -23,7 +23,7 @@ def analyze_classroom(photo_path):
     Raises:
         Exception: If the API call fails or the response is invalid.
     """
-    invoke_url = "https://ai.api.nvidia.com/v1/vlm/nvidia/neva-22b"
+    invoke_url = "https://ai.api.nvidia.com/v1/gr/meta/llama-3.2-11b-vision-instruct/chat/completions"
 
     # Read and encode the image in Base64
     try:
@@ -40,24 +40,50 @@ def analyze_classroom(photo_path):
         "Accept": "application/json"
     }
     
+    # Structured classroom analysis prompt
+    analysis_prompt = """Analyze this classroom/training session image and provide a detailed engagement report.
+Use <br> tags for line breaks. Structure your response as follows:
+
+<b>Scene Overview</b><br>
+Describe the setting, infrastructure, number of people visible, and seating arrangement.<br><br>
+
+<b>Engagement Assessment</b><br>
+Evaluate the attention and engagement level of the people present:
+- Body posture and orientation (facing forward, leaning, slouching)
+- Eye contact and focus direction
+- Devices or materials in use (laptops, phones, notebooks)
+- Signs of active participation or disengagement<br><br>
+
+<b>Classroom Environment</b><br>
+Comment on lighting, space utilization, and any factors that could affect learning.<br><br>
+
+<b>Recommendations</b><br>
+Provide 2-3 actionable suggestions to improve engagement and the learning environment."""
+
     # Payload for the API request
     payload = {
+        "model": "meta/llama-3.2-11b-vision-instruct",
         "messages": [
             {
                 "role": "user",
-                "content": (f'''
-                            Explain the picture, what do you see, how the infrastructure of the place, what are the people doing
-                            use <br> for line break
-                            <img src="data:image/jpeg;base64,{image_b64}" />
-                            '''
-                )
+                "content": [
+                    {
+                        "type": "text",
+                        "text": analysis_prompt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_b64}"
+                        }
+                    }
+                ]
             }
         ],
-        "max_tokens": 100,
-        "temperature": 0.20,
+        "max_tokens": 1024,
+        "temperature": 0.30,
         "top_p": 0.70,
-        "seed": 0,
-        "stream": False  # Ensure this is set to False
+        "stream": False
     }
     
     # Make the API request

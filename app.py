@@ -59,6 +59,7 @@ output_folder = "./output"
 # Ensure directories exist
 os.makedirs(PHOTO_UPLOAD_DIR, exist_ok=True)
 os.makedirs("data", exist_ok=True)
+os.makedirs(output_folder, exist_ok=True)
 
 @contextmanager
 def session_scope():
@@ -84,16 +85,17 @@ def shutdown_session(exception=None):
 
 # Utility Functions
 def start_session_if_scheduled():
-    while True:
-        current_time = datetime.now().strftime("%H:%M")
-        with session_scope() as session:
-            session_to_start = session.query(Session).filter(
-                func.strftime("%H:%M", Session.start_time) == current_time
-            ).first()
-            
-            if session_to_start:
-                start_session(session_to_start.id)
-                break
+    with app.app_context():
+        while True:
+            current_time = datetime.now().strftime("%H:%M")
+            with session_scope() as session:
+                session_to_start = session.query(Session).filter(
+                    func.strftime("%H:%M", Session.start_time) == current_time
+                ).first()
+                
+                if session_to_start:
+                    start_session(session_to_start.id)
+                    break
 
 def monitor_sessions():
     session_thread = threading.Thread(target=start_session_if_scheduled)
@@ -240,7 +242,10 @@ def start_session(session_id):
                 print("Waiting for 1 minute before the next capture...")
                 time.sleep(60)
         
-        session_engagement_score = sum(engagement_scores) / len(engagement_scores) if engagement_scores else 0
+        # Filter out NaN scores from failed analyses
+        import math
+        valid_scores = [s for s in engagement_scores if not (isinstance(s, float) and math.isnan(s))]
+        session_engagement_score = sum(valid_scores) / len(valid_scores) if valid_scores else 0.0
 
         all_scores = load_engagement_scores()
         all_scores.append({
@@ -265,7 +270,14 @@ def start_session(session_id):
             db_session.add(engagement_report)
 
         except Exception as e:
-            return jsonify({"success": False, "error": f"LLM Analysis failed: {str(e)}"})
+            print(f"[ERROR] LLM Analysis failed for session {session_id}: {str(e)}")
+            # Still save a report with just the engagement score (no LLM content)
+            engagement_report = EngagementReport(
+                session_id=session_id,
+                score=session_engagement_score,
+                report_content=f"LLM analysis unavailable: {str(e)}",
+            )
+            db_session.add(engagement_report)
 
 @app.route('/session_report')
 def session_report():
@@ -281,27 +293,31 @@ def view_report(session_id):
             abort(404, description=f"Session with ID {session_id} not found")
 
         report = session.query(EngagementReport).filter_by(session_id=session_id).first()
-        if not report:
-            return jsonify({"error": "Engagement report not found"}), 404
-
-        face_data_csv = os.path.join(output_folder, f"face_data_1.csv")
-        if not os.path.exists(face_data_csv):
-            return jsonify({"error": "Face data not found"}), 404
-
-        face_data = pd.read_csv(face_data_csv)
-        engagement_df, institution_engagement_score = calculate_engagement(face_data_csv)
 
         overall_engagement_score = session.query(
             func.avg(EngagementReport.score)
         ).filter_by(session_id=session_id).scalar()
 
+        # Try loading face data; fall back to empty lists if unavailable
+        face_data_csv = os.path.join(output_folder, f"face_data_1.csv")
+        face_data = []
+        engagement_data = []
+        if os.path.exists(face_data_csv):
+            try:
+                face_data_df = pd.read_csv(face_data_csv)
+                engagement_df, _ = calculate_engagement(face_data_csv)
+                face_data = face_data_df.to_dict(orient='records')
+                engagement_data = engagement_df.to_dict(orient='records')
+            except Exception as e:
+                print(f"[WARN] Could not load face data: {e}")
+
         return render_template(
             'view_report.html',
             session=session_data,
             engagement_report=report,
-            face_data=face_data.to_dict(orient='records'),
-            engagement_df=engagement_df.to_dict(orient='records'),
-            overall_engagement_score=overall_engagement_score,
+            face_data=face_data,
+            engagement_df=engagement_data,
+            overall_engagement_score=overall_engagement_score or 0,
         )
 
 @app.route("/logout")

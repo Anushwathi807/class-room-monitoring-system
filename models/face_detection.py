@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 from . import resnet50
 from .processing import preprocess
-from tensorflow.keras.models import Model
+from tf_keras.models import Model
 import numpy as np
 import pandas as pd
 import tensorflow as tf
