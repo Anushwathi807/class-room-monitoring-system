@@ -109,25 +109,36 @@ def load_engagement_scores():
             return json.load(file)
     return []
 
-def capture_photo(photo_number):
+def capture_photo(photo_number, max_retries=3):
     """Capture a photo using the camera and save it to the upload folder."""
-    cap = cv2.VideoCapture(0)
-    
-    if not cap.isOpened():
-        raise Exception("Could not open camera")
-    
-    ret, frame = cap.read()
-    
-    if not ret:
+    for attempt in range(max_retries):
+        cap = cv2.VideoCapture(0)
+        
+        if not cap.isOpened():
+            print(f"[WARN] Camera not available (attempt {attempt + 1}/{max_retries})")
+            time.sleep(2)
+            continue
+        
+        # Allow the camera to warm up by reading a few frames
+        for _ in range(5):
+            cap.read()
+            time.sleep(0.1)
+        
+        ret, frame = cap.read()
         cap.release()
-        raise Exception("Failed to capture image")
+        
+        if not ret or frame is None:
+            print(f"[WARN] Failed to capture image (attempt {attempt + 1}/{max_retries})")
+            time.sleep(2)
+            continue
 
-    photo_path = os.path.join(PHOTO_UPLOAD_DIR, f"photo_{photo_number}.jpg")
-    cv2.imwrite(photo_path, frame)
-    cap.release()
+        photo_path = os.path.join(PHOTO_UPLOAD_DIR, f"photo_{photo_number}.jpg")
+        cv2.imwrite(photo_path, frame)
+        
+        print(f"Photo {photo_number} captured and saved to {photo_path}")
+        return photo_path
     
-    print(f"Photo {photo_number} captured and saved to {photo_path}")
-    return photo_path
+    raise Exception(f"Failed to capture image after {max_retries} attempts. Check that a camera is connected and not in use by another application.")
 
 def save_engagement_scores(scores):
     """Save engagement scores to file."""
@@ -211,7 +222,7 @@ def start_session(session_id):
     engagement_scores = []
     
     with session_scope() as db_session:
-        session_to_start = db_session.query(Session).get(session_id)
+        session_to_start = db_session.get(Session, session_id)
         start = datetime.strptime(session_to_start.start_time, "%H:%M")
         end = datetime.strptime(session_to_start.end_time, "%H:%M")
         minutes = (end - start).seconds // 60
@@ -288,7 +299,7 @@ def session_report():
 @app.route('/view_report/<int:session_id>')
 def view_report(session_id):
     with session_scope() as session:
-        session_data = session.query(Session).get(session_id)
+        session_data = session.get(Session, session_id)
         if session_data is None:
             abort(404, description=f"Session with ID {session_id} not found")
 
@@ -436,7 +447,7 @@ def attendance_report():
 
     if session_id:
         # Fetch attendance data for the selected session
-        selected_session = Session.query.get(session_id)
+        selected_session = db.session.get(Session, session_id)
         attendance_records = (
             db.session.query(Attendance, Student)
             .join(Student, Attendance.student_id == Student.id)

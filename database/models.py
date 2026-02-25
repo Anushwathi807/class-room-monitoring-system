@@ -31,7 +31,7 @@ class Session(db.Model):
     start_time = db.Column(db.String(5), nullable=False)
     end_time = db.Column(db.String(5), nullable=False)
     trainer_id = db.Column(db.Integer, db.ForeignKey('trainer.id'), nullable=False)
-    students = db.relationship('Student', secondary='attendance', backref='sessions', lazy='dynamic')
+    students = db.relationship('Student', secondary='attendance', backref='sessions', lazy='dynamic', overlaps='attendances,session,student')
     engagement_reports = db.relationship('EngagementReport', back_populates='session')
 
 # Student model
@@ -47,8 +47,8 @@ class Attendance(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
     present = db.Column(db.Boolean, nullable=False)
 
-    session = db.relationship('Session', backref=db.backref('attendances', lazy=True))
-    student = db.relationship('Student', backref=db.backref('attendances', lazy=True))
+    session = db.relationship('Session', backref=db.backref('attendances', lazy=True), overlaps='sessions,students')
+    student = db.relationship('Student', backref=db.backref('attendances', lazy=True), overlaps='sessions,students')
 
 
 class EngagementReport(db.Model):
